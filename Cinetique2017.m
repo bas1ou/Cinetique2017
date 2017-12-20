@@ -2,7 +2,7 @@ function  [DPn,C,ri] = Cinetique2017(a,b,c,d,e)
 
 
 %%
-%Cette section contient les options de simulations choisies, 0 pour non, 1
+%Cette section contient toutes les options de simulations choisies, 0 pour non, 1
 %pour oui. On a, dans l'ordre, l'effet Trommsdorf, l'effet de
 %vitrification, l'ajout d'un agent de transfert, l'épuisement de l'amorçeur
 %et l'impact de la température. Ce variables sont utilisées plus tard dans
