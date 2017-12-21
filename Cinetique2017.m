@@ -117,9 +117,10 @@ xlabel('Temps [heure]');
 xlim([0 24]);
 ylabel('Température [°C]');
 legend('Simulation n°4','Simulation n°6');
-
-
 end
+
+
+%======================================================================
 
 
 function  [DPn,C,ri] = Resolution(a,b,c,d,e)
@@ -214,6 +215,10 @@ end
 
 end
 
+
+%========================================================================
+
+
 function Cd = dCdt (t, C)
 %Cette fonction donne les dérivées temporelles des concentrations et de la
 %température à l'instant et aux concentrations données. Elle est utilisée
@@ -274,6 +279,10 @@ Cd = Cd';
 
 end
 
+
+%========================================================================
+
+
 function kp = calculKp (x,T)
 % Calcul de la constante cinétique associée à la propagation en fonction de
 % la conversion et de la température. On approxime l'impact de la
@@ -294,6 +303,9 @@ end
 end
 
 
+%=======================================================================
+
+
 function kt = calculKt (x,T)
 % Calcul de la constante cinétique associée à la terminaison en fonction de
 % la conversion et de la température. On modèlise l'impact de la conversion
@@ -311,6 +323,10 @@ else
 end
 
 end
+
+
+%========================================================================
+
 
 function[] = approximation()
 %% 
