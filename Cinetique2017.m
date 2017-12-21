@@ -1,8 +1,133 @@
-function  [DPn,C,ri] = Cinetique2017(a,b,c,d,e)
+% Auteurs : Baptiste FORGET   Hadrien MOREAU
+% Noma    : 6613.1400         5650.1400
+% Programme de simulation d'une polymérisation radicalaire de PMMA
 
+function [] = Cinetique2017()
+
+%Cette fonction exécute plusieurs fois la simulation pour obtenir les
+%graphes données dans le rapport
+global condInitM
+
+% l'ordre des options est (trommsdorf, vitrification, transfert, ri
+% constant, température)
+[Dpn1,C1,ri1] = Resolution(0,0,0,1,0);
+[Dpn2,C2,ri2] = Resolution(1,0,0,1,0);
+[Dpn3,C3,ri3] = Resolution(1,1,0,1,0);
+[Dpn4,C4,ri4] = Resolution(1,1,1,1,0);
+[Dpn5,C5,ri5] = Resolution(1,1,1,0,0);
+[Dpn6,C6,ri6] = Resolution(1,1,1,1,1);
+
+t = linspace(0,86400,50000);
+%%
+%Visualisation de l'impact de différents effets cinétique
+figure;
+subplot(2,1,1);
+
+plot(t/3600,1 - (C1(:,2)/condInitM));
+hold on
+plot(t/3600,1 - (C2(:,2)/condInitM));
+plot(t/3600,1 - (C3(:,2)/condInitM));
+plot(t/3600,1 - (C4(:,2)/condInitM));
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylim([0 1]);
+ylabel('Conversion en monomère [/]');
+legend('Simulation n°1','Simulation n°2','Simulation n°3','Simulation n°4');
+
+subplot(2,1,2);
+
+plot(t/3600,Dpn1);
+hold on
+plot(t/3600,Dpn2); 
+plot(t/3600,Dpn3); 
+plot(t/3600,Dpn4); 
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylabel('DPn [/]');
+legend('Simulation n°1','Simulation n°2','Simulation n°3','Simulation n°4');
 
 %%
-%Cette section contient toutes les options de simulations choisies, 0 pour non, 1
+% Comparaison avec ri constant et ri variable
+figure;
+
+subplot(3,1,1);
+plot(t/3600,1 - (C4(:,2)/condInitM));
+hold on
+plot(t/3600,1 - (C5(:,2)/condInitM));
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylim([0 1]);
+ylabel('Conversion en monomère [/]');
+legend('Simulation n°4','Simulation n°5');
+
+subplot(3,1,2);
+plot(t/3600,Dpn4);
+hold on
+plot(t/3600,Dpn5);
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylabel('DPn [/]');
+legend('Simulation n°4','Simulation n°5');
+
+subplot(3,1,3);
+plot(t/3600,ri4);
+hold on
+plot(t/3600,ri5);
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylabel('ri [mol/m².s]');
+legend('Simulation n°4','Simulation n°5');
+
+%%
+% Impact de la température
+figure
+
+subplot(3,1,1);
+plot(t/3600,1 - (C4(:,2)/condInitM));
+hold on
+plot(t/3600,1 - (C6(:,2)/condInitM));
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylim([0 1]);
+ylabel('Conversion en monomère [/]');
+legend('Simulation n°4','Simulation n°6');
+
+subplot(3,1,2);
+plot(t/3600,Dpn4);
+hold on
+plot(t/3600,Dpn6);
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylabel('DPn [/]');
+legend('Simulation n°4','Simulation n°6');
+
+subplot(3,1,3);
+plot(t/3600,C4(:,4)-273.15);
+hold on
+plot(t/3600,C6(:,4)-273.15);
+
+xlabel('Temps [heure]');
+xlim([0 24]);
+ylabel('Température [°C]');
+legend('Simulation n°4','Simulation n°6');
+
+
+end
+
+
+function  [DPn,C,ri] = Resolution(a,b,c,d,e)
+%Cette fonction réalise la simulation du modèle de la réaction pour le set
+%d'options donné en argument
+
+%%
+%Cette section contient les options de simulations choisies, 0 pour non, 1
 %pour oui. On a, dans l'ordre, l'effet Trommsdorf, l'effet de
 %vitrification, l'ajout d'un agent de transfert, l'épuisement de l'amorçeur
 %et l'impact de la température. Ce variables sont utilisées plus tard dans
@@ -25,8 +150,8 @@ Cs = 0.66; %Butanethiol
 %Déclaration des conditions initiales en [mol/m^2] rappel, le problème est
 %infini dans 2 dimensions
 
-global condInitM
-condInitII  = 3e-2; %Amorçeur (arbitraire)
+global condInitM 
+condInitII  = 1e-1; %Amorçeur (arbitraire)
 condInitM   = 9.4 ; %Monomère (fixée par les données de l'énoncé)
 
 if(transfert == 1)
@@ -52,7 +177,7 @@ tSpan  = linspace(0,86400,n); %Simulation sur 24 heures
 %%
 % Partie calcul du Degré de polymérisation moyen instantané en nombre. On
 % utilise les concentrations et températures obtenues par Ode15s pour
-% calculer la probabilité de propagation : alpha
+% calculer la probabilité de propagation : alpha puis le DPn
 
 DPn = zeros(n,1);
 ri = zeros(n,1);
@@ -77,59 +202,23 @@ for i=1:n
     if ricst %Calcul de la vitesse d'apparition des radicaux
         ri(i) = 8.36e-9; %Cas ri = cst
     else
-        %Calcul de kII
-        %AII = 4.0693e11 ; % Facteur pré-exponentielle
-        %EII = 1.04192e5 ; % Energie d'activation
-        %R   = 8.314     ;
-        %kII = AII*exp(-EII/(R*T));% Calcul par la loi d'Arrhénius
-        kII = 1.58e-7;
-        ri(i) = 2*kII*C(1); % Cas ri = fct([I-I],T)
+        kII = 3.27e-8; 
+        ri(i) = 2*kII*C(1); % Cas ri = fct([I-I])
     end
 
     R = sqrt(ri(i)/kt); %Concentration totale en radicaux
 
     alpha = kp*R*C(i,2) / (kp*R*C(i,2) + ks*C(i,3)*R + kt*R^2); % Probabilité de propagation
-    DPn(i) = 1/(1-alpha); % Dpn instantané moyen en nombre
-    
-end
-%%
-% Partie Graphes
-if(0)
-figure % Concentration en amorçeur [mol/m^2]
-plot(t/3600,C(:,1));
-xlabel('Temps [heure]');
-xlim([0 24]);
-ylabel('Concentration en amorçeur [mol/m^2]');
-
-figure % Conversion en monomère [/]
-plot(t/3600,1 - (C(:,2)/condInitM));
-xlabel('Temps [heure]');
-xlim([0 24]);
-ylabel('Conversion en monomère [/]');
-
-figure % Concentration en agent de tranfert [mol/m^2]
-plot(t/3600, C(:,3));
-xlabel('Temps [heure]');
-xlim([0 24]);
-ylabel('Concentration en agent de transfert [mol/m^2]');
-
-figure % Température [°C]
-plot(t/3600,C(:,4)-273.15);
-xlabel('Temps [heure]');
-xlim([0 24]);
-ylabel('Température [°C]');
-
-figure
-plot(t/3600,DPn); % Degré de polymérisation instantanné moyen en nombre [/]
-xlabel('Temps [heure]');
-xlim([0 24]);
-ylabel('Dpn [/]');
+    DPn(i) = 1/(1-alpha); % DPn instantané moyen en nombre
 end
 
 end
-
 
 function Cd = dCdt (t, C)
+%Cette fonction donne les dérivées temporelles des concentrations et de la
+%température à l'instant et aux concentrations données. Elle est utilisée
+%par ode15s
+
 global trommsdorf vitrification ricst temperature
 global condInitM Cs 
 
@@ -154,12 +243,7 @@ end
 if ricst %Calcul de la vitesse d'apparition des radicaux
     ri = 8.36e-9; %Cas ri = cst
 else
-    %Calcul de kII
-%     AII = 4.0693e11 ; % Facteur pré-exponentielle
-%     EII = 1.04192e5 ; % Energie d'activation
-%     R   = 8.314     ;
-%     kII = AII*exp(-EII/(R*T));% Calcul par la loi d'Arrhénius
-    kII = 1.58e-7;
+    kII = 3.27e-8;
     ri = 2*kII*C(1); % Cas ri = fct([I-I],T)
 end
 
@@ -230,7 +314,7 @@ end
 
 function[] = approximation()
 %% 
-% Cette fonction donne les coeffcients du polynôme de degré 2 ncessaires
+% Cette fonction donne les coefficients du polynôme de degré 2 nécessaires
 % pour le calcul de la constante cinétique de propagation
 
 y = [2.5 2.3 1.8 1.2 0.0];
