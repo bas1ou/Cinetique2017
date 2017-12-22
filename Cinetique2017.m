@@ -19,7 +19,7 @@ global condInitM
 
 t = linspace(0,86400,50000);
 %%
-%Visualisation de l'impact de différents effets cinétique
+%Visualisation de l'impact de différents effets cinétiques
 figure;
 subplot(2,1,1);
 
@@ -168,7 +168,7 @@ condInit    = [condInitII condInitM condInitTrH Ti]; %remise sous forme de vecte
 %%
 % Partie Résolution du problème par ode15s
 % Note, on écrit C pour la concentration, mais on résout également la
-% température, qui sera contenu dans C(:,4)
+% température, qui sera contenue dans C(:,4)
 
 n = 50000; %Nombre de pas de temps
 tSpan  = linspace(0,86400,n); %Simulation sur 24 heures
@@ -289,14 +289,14 @@ function kp = calculKp (x,T)
 % conversion par une partie constante jusqu'à x = 0.4 puis par un polynôme
 % de degré 2 pour 0.4 < x < 1.0
 
-Ep = 1.8283e4; %Energie d'ativation de la réaction de propagation
+Ep = 1.8283e4; %Energie d'activation de la réaction de propagation
 
 if(x < 0.4) % La conversion n'impact pas kp tant qu'elle ne dépasse pas 0.4
     Ap1 = 537412.19; % Facteur pré exponentiel pour cette partie, calculée sur base du graphe
     kp = Ap1 * exp(-Ep/(8.314*T)); %Calcul de kp
     
 elseif(x >= 0.4)% Approximation de l'impact de la conversion par un polynome du 2ème degré
-    Ap2 = 45165.57; % Facteur pré exponentiel pour cette partie, calculée sur base du graphe
+    Ap2 = 45165.57; % Facteur pré-exponentiel pour cette partie, calculée sur base du graphe
     pol = [-10.7148 7.0289 1.4245]; %Coefficient du polynôme d'approximation
     kp = Ap2 * 10^( pol(1)*x^2 + pol(2)*x) * exp(-Ep/(8.314*T)); %Calcul de kp   
 end
@@ -315,10 +315,10 @@ function kt = calculKt (x,T)
 Et = 2.9442e3; % Energie d'activation de la réaction de terminaison
 
 if(x<0.1)
-    At1 = 1.47976e8; % Facteur pré exponentiel pour cette partie, calculée sur base du graphe
+    At1 = 1.47976e8; % Facteur pré-exponentiel pour cette partie, calculée sur base du graphe
     kt = At1 * 10^(-1.818*x) * exp(-Et/(8.314*T)); % Calcul du kt
 else
-    At2 = 4.17054e8; % Facteur pré exponentiel pour cette partie, calculée sur base du graphe
+    At2 = 4.17054e8; % Facteur pré-exponentiel pour cette partie, calculée sur base du graphe
     kt = At2 * 10^(-6.12*x)  * exp(-Et/(8.314*T)); % Calcul du kt
 end
 
